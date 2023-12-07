@@ -57,14 +57,23 @@ on drop get event.dataTransfer.getData('text/plain')
     }
 }
 
-/// The final Markup, including columns and cards.
-pub fn board(board_title: &str, columns: Vec<(String, Vec<&str>)>) -> Markup {
+pub fn board(columns: Vec<(String, Vec<&str>)>) -> Markup {
+    html! {
+        div #board {
+            @for (list_title, cards) in columns {
+                (list(&list_title, cards))
+            }
+        }
+    }
+}
+
+pub fn base(board_title: &str, columns: Vec<(String, Vec<&str>)>) -> Markup {
     html! {
         (DOCTYPE)
         html {
             head {
                 meta charset="utf-8";
-                title { (board_title) }
+                title { (format!("Board - {board_title}")) }
                 link rel="stylesheet" type="text/css" href="/static/index.css";
                 script src="/static/placement.js" {};
                 script src="/static/DragDropTouch.js" {};
@@ -72,12 +81,7 @@ pub fn board(board_title: &str, columns: Vec<(String, Vec<&str>)>) -> Markup {
             }
             body {
                 h1 { (board_title) }
-
-                div #board {
-                    @for (list_title, cards) in columns {
-                        (list(&list_title, cards))
-                    }
-                }
+                (board(columns))
             }
         }
     }
@@ -85,7 +89,7 @@ pub fn board(board_title: &str, columns: Vec<(String, Vec<&str>)>) -> Markup {
 
 #[get("/")]
 async fn index() -> AwResult<Markup> {
-    Ok(board(
+    Ok(base(
         "My board",
         vec![
             (String::from("To do"), vec!["Fix #3", "Refactor everything"]),
