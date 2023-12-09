@@ -26,7 +26,7 @@ impl<T: sqlx::Database> InIndexVector for QueryBuilder<'_, T> {
         }
 
         let values: Vec<String> = vec.iter().map(|n| format!("'{n}'")).collect();
-        self.push(format!(" IN ({})", values.join(",")));
+        self.push(format!(" IN ({}) ", values.join(",")));
         self
     }
 }
