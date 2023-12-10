@@ -27,12 +27,24 @@ async fn index(state: Data<AppState>) -> AwResult<Markup> {
         .ensure_data_type()?
         .into();
 
-    let mut lists: HashMap<i64, models::List> = QueryBuilder::new("SELECT * FROM lists WHERE id")
+    let lists: Vec<models::ListData> = QueryBuilder::new("SELECT * FROM lists WHERE id")
         .in_index_vector(&board.lists_order)
         .build_query_as::<db::List>()
         .fetch_all(&state.db)
         .await
         .ensure_data_type()?
+        .into_iter()
+        .map(models::ListData::from)
+        .collect();
+
+    let cards: Vec<db::Card> = QueryBuilder::new("SELECT * FROM cards WHERE list_id")
+        .in_index_vector(&board.lists_order)
+        .build_query_as::<db::Card>()
+        .fetch_all(&state.db)
+        .await
+        .ensure_data_type()?;
+
+    let mut lists: HashMap<i64, models::List> = lists
         .into_iter()
         .map(|list| {
             (
@@ -44,12 +56,6 @@ async fn index(state: Data<AppState>) -> AwResult<Markup> {
             )
         })
         .collect();
-
-    let cards = sqlx::query_as::<_, db::Card>("SELECT id, title, list_id FROM cards")
-        .fetch_all(&state.db)
-        .await
-        .map_err(CustomError::DataTypeError)?;
-
     for card in cards {
         let list_id = &card.list_id;
         if let Some(list) = lists.get_mut(list_id) {
