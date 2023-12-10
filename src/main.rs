@@ -3,7 +3,7 @@ mod html;
 mod models;
 mod util;
 
-use crate::util::{CustomError, Helper, InIndexVector};
+use crate::util::{Helper, InIndexVector};
 
 use actix_files::Files;
 use actix_web::web::Data;

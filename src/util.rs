@@ -16,16 +16,16 @@ impl ResponseError for CustomError {
 }
 
 pub trait InIndexVector {
-    fn in_index_vector(self, vec: &Vec<i64>) -> Self;
+    fn in_index_vector(self, idxs: &[i64]) -> Self;
 }
 
 impl<T: sqlx::Database> InIndexVector for QueryBuilder<'_, T> {
-    fn in_index_vector(mut self, vec: &Vec<i64>) -> Self {
-        if vec.is_empty() {
+    fn in_index_vector(mut self, idxs: &[i64]) -> Self {
+        if idxs.is_empty() {
             return self;
         }
 
-        let values: Vec<String> = vec.iter().map(|n| format!("'{n}'")).collect();
+        let values: Vec<String> = idxs.iter().map(|n| format!("'{n}'")).collect();
         self.push(format!(" IN ({}) ", values.join(",")));
         self
     }
