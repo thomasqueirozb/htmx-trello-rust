@@ -2,7 +2,8 @@ use crate::db;
 
 #[derive(Debug)]
 pub struct List {
-    pub list: db::List,
+    pub id: i64,
+    pub title: String,
     pub cards: Vec<db::Card>,
 }
 

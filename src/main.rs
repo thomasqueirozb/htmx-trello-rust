@@ -50,12 +50,14 @@ async fn index(state: Data<AppState>) -> AwResult<Markup> {
             (
                 list.id,
                 models::List {
-                    list,
+                    id: list.id,
+                    title: list.title,
                     cards: Vec::new(),
                 },
             )
         })
         .collect();
+
     for card in cards {
         let list_id = &card.list_id;
         if let Some(list) = lists.get_mut(list_id) {

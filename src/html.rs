@@ -42,7 +42,7 @@ on drop get event.dataTransfer.getData('text/plain')
     else put card at the end of me end
 "
         {
-            h2 class="list-title" { (list.list.title) }
+            h2 class="list-title" { (list.title) }
             @for card in list.cards {
                 (make_card(card))
             }
