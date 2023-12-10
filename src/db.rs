@@ -39,7 +39,8 @@ pub async fn init(url: impl Into<&str>) -> Result<SqlitePool, sqlx::Error> {
     let db = SqlitePool::connect(url).await?;
 
     if new {
-        sqlx::migrate!("./migrations/").run(&db).await?;
+        #[cfg(not(debug_assertions))]
+        sqlx::migrate!().run(&db).await?;
         #[cfg(debug_assertions)]
         sqlx::migrate!("./migrations_debug/").run(&db).await?;
 
