@@ -28,7 +28,8 @@ on drop or dragend remove .no-pointer-events from <.list>*/>
 pub fn make_list(list: List) -> Markup {
     html! {
         ul.list _="
-on dragover or dragenter halt the event then add .hovered to me
+on dragover or dragenter halt the event
+    remove .hovered from .list then add .hovered to me
 on dragleave if event.target is me and event.fromElement.parentElement is not me
     remove .hovered from me
 end
