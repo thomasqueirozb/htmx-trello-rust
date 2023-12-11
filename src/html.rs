@@ -34,13 +34,14 @@ on dragleave if event.target is me and event.fromElement.parentElement is not me
     remove .hovered from me
 end
 on drop remove .hovered from me
-on drop get event.dataTransfer.getData('text/plain')
-    then set card to #{it}
-    then call determinePlacement(event) then set placement to it
-    if placement exists then
-        if placement.placeBefore then put card before placement.closestLi
-        else put card after placement.closestLi end
-    else put card at the end of me end
+    get event.dataTransfer.getData('text/plain') then set card to #{it}
+    if card exists then
+        call determinePlacement(event) then set placement to it
+        if placement exists then
+            if placement.placeBefore then put card before placement.closestLi
+            else put card after placement.closestLi end
+        else put card at the end of me end
+    end
 "
         {
             h2 class="list-title" { (list.title) }
