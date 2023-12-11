@@ -66,6 +66,7 @@ pub fn base(board_title: String, lists: Vec<List>) -> Markup {
         html {
             head {
                 meta charset="utf-8";
+                meta name="viewport" content="width=device-width,initial-scale=1.0";
                 title { (format!("Board - {board_title}")) }
                 link rel="stylesheet" type="text/css" href="/static/index.css";
                 script src="/static/placement.js" {};
