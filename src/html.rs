@@ -27,7 +27,7 @@ on drop or dragend remove .no-pointer-events from <.list>*/>
 /// A basic list with dynamic `list_title` and a list of cards.
 pub fn make_list(list: List) -> Markup {
     html! {
-        ul.list _="
+        ul.list id=(list.id()) _="
 on dragover or dragenter halt the event
     remove .hovered from .list then add .hovered to me
 on dragleave if event.target is me and event.fromElement.parentElement is not me

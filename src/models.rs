@@ -7,6 +7,12 @@ pub struct List {
     pub cards: Vec<db::Card>,
 }
 
+impl List {
+    pub fn id(&self) -> String {
+        format!("list-{}", self.id)
+    }
+}
+
 #[derive(Debug)]
 pub struct ListData {
     pub id: i64,
