@@ -38,9 +38,16 @@ on drop remove .hovered from me
     if card exists then
         call determinePlacement(event) then set placement to it
         if placement exists then
+            put placement.idx into #moved-new-position.value
             if placement.placeBefore then put card before placement.closestLi
             else put card after placement.closestLi end
-        else put card at the end of me end
+        else
+            put card at the end of me
+            put '-1' into #moved-new-position.value
+        end
+        put strip_id(card.id) into #moved-card-id.value
+        put strip_id(me.id) into #moved-to-list-id.value
+        send cardmoved to #move-card
     end
 "
         {
@@ -59,6 +66,11 @@ pub fn make_board(lists: Vec<List>) -> Markup {
                 (make_list(list))
             }
         }
+        form.hidden id="move-card" hx-post="/move/card" hx-target="#board" hx-trigger="cardmoved" hx-swap="outerHTML" {
+            input type="text" id="moved-card-id" name="card-id" value="" {}
+            input type="text" id="moved-to-list-id" name="to-list-id" value="" {}
+            input type="text" id="moved-new-position" name="new-position" value="" {}
+        }
     }
 }
 
@@ -73,7 +85,14 @@ pub fn base(board_title: String, lists: Vec<List>) -> Markup {
                 link rel="stylesheet" type="text/css" href="/static/index.css";
                 script src="/static/placement.js" {};
                 script src="/static/DragDropTouch.js" {};
+                script type="text/hyperscript" {
+                    "
+                    def strip_id(s)
+                        return s.split('-').pop()
+                    "
+                };
                 script src="https://unpkg.com/hyperscript.org@0.9.12" {};
+                script src="https://unpkg.com/htmx.org@1.9.9" {};
             }
             body {
                 h1 { (board_title) }
