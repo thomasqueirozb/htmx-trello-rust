@@ -15,7 +15,9 @@ function findClosestLi(y, target) {
     }
 
     let closestLi = null;
+    let closestLiIdx = null;
     let closestDistance = Number.MAX_VALUE;
+    let idx = 0;
 
     // Traverse the <ul> children and find the closest <li>
     for (let liElement of target.children) {
@@ -30,25 +32,41 @@ function findClosestLi(y, target) {
         // Update closestLi if this is closer
         if (distance < closestDistance) {
             closestLi = liElement;
+            closestLiIdx = idx;
             closestDistance = distance;
         }
-    }
-    return closestLi;
-}
 
-function determinePlacement(event) {
-    let y = event.clientY
-    let closestLi = findClosestLi(y, event.target);
+        idx++;
+    }
 
     if (!closestLi) {
         return null;
     }
 
+    return {
+        li: closestLi,
+        idx: closestLiIdx,
+    }
+}
+
+function determinePlacement(event) {
+    let y = event.clientY
+    let closestLiData = findClosestLi(y, event.target);
+
+    if (!closestLiData) {
+        return null;
+    }
+
+    let closestLi = closestLiData.li;
+    let closestLiIdx = closestLiData.idx;
+
     let rect = closestLi.getBoundingClientRect();
+    let placeBefore = event.clientY < rect.top + rect.height / 2
 
     return {
         closestLi: closestLi,
-        placeBefore: event.clientY < rect.top + rect.height / 2
+        idx: closestLiIdx + (placeBefore ? 0 : 1),
+        placeBefore: placeBefore,
     };
 
 }
