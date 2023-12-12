@@ -13,20 +13,33 @@ impl List {
     }
 }
 
+impl From<ListData> for List {
+    fn from(source: ListData) -> Self {
+        Self {
+            id: source.id,
+            title: source.title,
+            cards: source.cards,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct ListData {
     pub id: i64,
     pub title: String,
+    pub cards: Vec<db::Card>,
     pub cards_order: Vec<i64>,
 }
 
 impl From<db::List> for ListData {
     fn from(source: db::List) -> Self {
+        let cards_order: Vec<i64> =
+            serde_json::from_str(&source.cards_order).expect("Garbage in DB cards_order");
         Self {
             id: source.id,
             title: source.title,
-            cards_order: serde_json::from_str(&source.cards_order)
-                .expect("Garbage in DB cards_order"),
+            cards: Vec::with_capacity(cards_order.len()),
+            cards_order,
         }
     }
 }
