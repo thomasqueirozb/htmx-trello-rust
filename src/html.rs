@@ -36,7 +36,7 @@ end
 on drop remove .hovered from me
     get event.dataTransfer.getData('text/plain') then set card to #{it}
     if card exists then
-        call determinePlacement(event) then set placement to it
+        call determinePlacement(event, card) then set placement to it
         if placement exists then
             put placement.idx into #moved-new-position.value
             if placement.placeBefore then put card before placement.closestLi

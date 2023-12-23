@@ -1,4 +1,4 @@
-function findClosestLi(y, target) {
+function findClosestLi(y, target, cardId) {
     if (target.tagName === 'LI') {
         return target;
     }
@@ -18,12 +18,18 @@ function findClosestLi(y, target) {
     let closestLiIdx = null;
     let closestDistance = Number.MAX_VALUE;
     let idx = 0;
+    let cardIdx = null;
 
     // Traverse the <ul> children and find the closest <li>
     for (let liElement of target.children) {
         if (liElement.tagName !== 'LI') {
             continue;
         }
+
+        if (liElement.id == cardId) {
+            cardIdx = idx;
+        }
+
         let rect = liElement.getBoundingClientRect()
 
         // Calculate the vertical distance between the mouse pointer and the middle of the li
@@ -43,15 +49,20 @@ function findClosestLi(y, target) {
         return null;
     }
 
+    // Moving inside the same list
+    if (cardIdx !== null && cardIdx < closestLiIdx) {
+        closestLiIdx--;
+    }
+
     return {
         li: closestLi,
         idx: closestLiIdx,
     }
 }
 
-function determinePlacement(event) {
+function determinePlacement(event, card) {
     let y = event.clientY
-    let closestLiData = findClosestLi(y, event.target);
+    let closestLiData = findClosestLi(y, event.target, card.id);
 
     if (!closestLiData) {
         return null;
