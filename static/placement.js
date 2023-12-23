@@ -1,6 +1,6 @@
 function findClosestLi(y, target, cardId) {
     if (target.tagName === 'LI') {
-        return target;
+        target = target.parentElement;
     }
 
     while (target) {
