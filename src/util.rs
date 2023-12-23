@@ -12,6 +12,8 @@ pub enum CustomError {
     IndexVectorParseError(serde_json::Error),
     #[display(fmt = "Not enough items returned from query: {}", _0)]
     InsufficientItemsReturned(String),
+    #[display(fmt = "Custom error: {}", _0)]
+    Other(String),
 }
 
 impl ResponseError for CustomError {

@@ -122,7 +122,11 @@ async fn move_card(
     };
 
     let mut from_cards_order = from_list.cards_order.parse_index_vector()?;
-    from_cards_order.retain(|&id| id != card_id);
+    let Some(from_cards_order_card_id) = from_cards_order.iter().position(|&id| id == card_id)
+    else {
+        return Err(CustomError::Other(format!("Card not found in from positions list")).into());
+    };
+    from_cards_order.remove(from_cards_order_card_id);
     let from_cards_order = serde_json::to_string(&from_cards_order).unwrap();
 
     let mut to_cards_order = to_list.cards_order.parse_index_vector()?;
