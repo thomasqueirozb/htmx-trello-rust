@@ -106,55 +106,88 @@ async fn move_card(
     .ensure_query_success()?;
 
     let query_len = query.len();
-    if query_len != 2 {
+    if !(query_len == 1 || query_len == 2) {
         dbg!(&query);
         return Err(CustomError::InsufficientItemsReturned(format!(
-            "Move card query != 2 ({query_len}): to list id: {to_list_id}, card id {card_id}"
+            "Move card query not 1 or 2 ({query_len}): to list id: {to_list_id}, card id {card_id}"
         ))
         .into());
     }
-    let popped = query.pop().unwrap();
+    let actual_position = |new_position: i64, len: usize| -> usize {
+        if new_position < 0 {
+            len
+        } else {
+            new_position as usize
+        }
+    };
 
-    let (to_list, from_list) = if popped.id == to_list_id {
-        (popped, query.pop().unwrap())
+    if query_len == 1 {
+        let list = query.pop().unwrap();
+
+        let mut cards_order = list.cards_order.parse_index_vector()?;
+        let Some(cards_order_card_id) = cards_order.iter().position(|&id| id == card_id) else {
+            return Err(
+                CustomError::Other("Card not found in from positions list".to_string()).into(),
+            );
+        };
+        cards_order.remove(cards_order_card_id);
+
+        cards_order.insert(actual_position(new_position, cards_order.len()), card_id);
+        let cards_order = serde_json::to_string(&cards_order).unwrap();
+
+        sqlx::query!(
+            "BEGIN TRANSACTION;
+            UPDATE lists SET cards_order = ? WHERE id = ?;
+            UPDATE cards SET list_id = ? WHERE id = ?;
+            COMMIT;",
+            cards_order,
+            list.id,
+            list.id,
+            card_id,
+        )
+        .execute(&state.db)
+        .await
+        .ensure_query_success()?;
     } else {
-        (query.pop().unwrap(), popped)
-    };
+        let popped = query.pop().unwrap();
 
-    let mut from_cards_order = from_list.cards_order.parse_index_vector()?;
-    let Some(from_cards_order_card_id) = from_cards_order.iter().position(|&id| id == card_id)
-    else {
-        return Err(CustomError::Other(format!("Card not found in from positions list")).into());
-    };
-    from_cards_order.remove(from_cards_order_card_id);
-    let from_cards_order = serde_json::to_string(&from_cards_order).unwrap();
+        let (to_list, from_list) = if popped.id == to_list_id {
+            (popped, query.pop().unwrap())
+        } else {
+            (query.pop().unwrap(), popped)
+        };
 
-    let mut to_cards_order = to_list.cards_order.parse_index_vector()?;
-    let new_position = if new_position < 0 {
-        to_cards_order.len()
-    } else {
-        new_position as usize
-    };
+        let mut from_cards_order = from_list.cards_order.parse_index_vector()?;
+        let Some(from_cards_order_card_id) = from_cards_order.iter().position(|&id| id == card_id)
+        else {
+            return Err(
+                CustomError::Other("Card not found in from positions list".to_string()).into(),
+            );
+        };
+        from_cards_order.remove(from_cards_order_card_id);
+        let from_cards_order = serde_json::to_string(&from_cards_order).unwrap();
 
-    to_cards_order.insert(new_position, card_id);
-    let to_cards_order = serde_json::to_string(&to_cards_order).unwrap();
+        let mut to_cards_order = to_list.cards_order.parse_index_vector()?;
+        to_cards_order.insert(actual_position(new_position, to_cards_order.len()), card_id);
+        let to_cards_order = serde_json::to_string(&to_cards_order).unwrap();
 
-    sqlx::query!(
-        "BEGIN TRANSACTION;
-        UPDATE lists SET cards_order = ? WHERE id = ?;
-        UPDATE lists SET cards_order = ? WHERE id = ?;
-        UPDATE cards SET list_id = ? WHERE id = ?;
-        COMMIT;",
-        from_cards_order,
-        from_list.id,
-        to_cards_order,
-        to_list.id,
-        to_list.id,
-        card_id,
-    )
-    .execute(&state.db)
-    .await
-    .ensure_query_success()?;
+        sqlx::query!(
+            "BEGIN TRANSACTION;
+            UPDATE lists SET cards_order = ? WHERE id = ?;
+            UPDATE lists SET cards_order = ? WHERE id = ?;
+            UPDATE cards SET list_id = ? WHERE id = ?;
+            COMMIT;",
+            from_cards_order,
+            from_list.id,
+            to_cards_order,
+            to_list.id,
+            to_list.id,
+            card_id,
+        )
+        .execute(&state.db)
+        .await
+        .ensure_query_success()?;
+    }
 
     let board = board(state).await?.1;
 
