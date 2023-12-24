@@ -6,7 +6,6 @@ mod models;
 mod util;
 
 use crate::board::board_data;
-use crate::card::move_card;
 
 use actix_files::Files;
 use actix_web::middleware::Logger;
@@ -38,7 +37,7 @@ async fn main() -> io::Result<()> {
             .app_data(Data::new(AppState { db: db.clone() }))
             .wrap(Logger::default())
             .service(index)
-            .service(move_card)
+            .service(crate::card::service())
             .service(Files::new("/static", "static").show_files_listing())
     })
     .bind(("0.0.0.0", 5000))?

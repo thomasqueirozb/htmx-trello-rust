@@ -15,11 +15,8 @@ struct MoveCard {
     new_position: i64,
 }
 
-#[post("/move/card")]
-pub async fn move_card(
-    state: Data<AppState>,
-    web::Form(form): web::Form<MoveCard>,
-) -> AwResult<Markup> {
+#[post("/move")]
+async fn move_(state: Data<AppState>, web::Form(form): web::Form<MoveCard>) -> AwResult<Markup> {
     let MoveCard {
         card_id,
         to_list_id,
@@ -130,4 +127,8 @@ pub async fn move_card(
     let board = board_data(state).await?.1;
 
     Ok(html::make_board(board))
+}
+
+pub fn service() -> actix_web::Scope {
+    web::scope("/card").service(move_)
 }
