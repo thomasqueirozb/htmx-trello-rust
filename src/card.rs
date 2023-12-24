@@ -59,16 +59,12 @@ async fn move_(state: Data<AppState>, web::Form(form): web::Form<MoveCard>) -> A
     if query_len == 1 {
         let list = query.pop().unwrap();
 
-        let mut cards_order = list.cards_order.parse_index_vector()?;
-        let Some(cards_order_card_id) = cards_order.iter().position(|&id| id == card_id) else {
-            return Err(
-                CustomError::Other("Card not found in from positions list".to_string()).into(),
-            );
-        };
-        cards_order.remove(cards_order_card_id);
-
+        let mut cards_order = list
+            .cards_order
+            .parse_index_vector()?
+            .remove_card(card_id)?;
         cards_order.insert(actual_position(new_position, cards_order.len()), card_id);
-        let cards_order = serde_json::to_string(&cards_order).unwrap();
+        let cards_order = cards_order.to_json();
 
         sqlx::query!(
             "BEGIN TRANSACTION;
@@ -92,19 +88,15 @@ async fn move_(state: Data<AppState>, web::Form(form): web::Form<MoveCard>) -> A
             (query.pop().unwrap(), popped)
         };
 
-        let mut from_cards_order = from_list.cards_order.parse_index_vector()?;
-        let Some(from_cards_order_card_id) = from_cards_order.iter().position(|&id| id == card_id)
-        else {
-            return Err(
-                CustomError::Other("Card not found in from positions list".to_string()).into(),
-            );
-        };
-        from_cards_order.remove(from_cards_order_card_id);
-        let from_cards_order = serde_json::to_string(&from_cards_order).unwrap();
+        let from_cards_order = from_list
+            .cards_order
+            .parse_index_vector()?
+            .remove_card(card_id)?
+            .to_json();
 
         let mut to_cards_order = to_list.cards_order.parse_index_vector()?;
         to_cards_order.insert(actual_position(new_position, to_cards_order.len()), card_id);
-        let to_cards_order = serde_json::to_string(&to_cards_order).unwrap();
+        let to_cards_order = to_cards_order.to_json();
 
         sqlx::query!(
             "BEGIN TRANSACTION;
