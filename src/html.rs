@@ -10,6 +10,7 @@ pub fn make_card(card: db::Card) -> Markup {
         li.card
             draggable="true"
             id=(id)
+            hx-include="this"
             _="
 on dragstart add .no-pointer-events to <.list>*/> when it is not me
     // add .no-pointer-events to the children of .list when it is not me
@@ -19,8 +20,10 @@ on drop or dragend remove .no-pointer-events from <.list>*/>
     // remove .no-pointer-events from .no-pointer-events
 "
         {
+            input type="hidden" name="card-id" value=(card.id)
+
             span { (card.title) }
-            button.remove { "X" }
+            button.remove hx-delete="/card" hx-target="#board" hx-swap="outerHTML" { "X" }
         }
     }
 }

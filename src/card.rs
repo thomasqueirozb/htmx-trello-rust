@@ -1,10 +1,10 @@
 use actix_web::web::{self, Data};
-use actix_web::{post, Result as AwResult};
+use actix_web::{delete, post, Result as AwResult};
 use maud::Markup;
 use serde::Deserialize;
 
 use crate::board::board_data;
-use crate::util::{CustomError, Helper, ParseIndexVector};
+use crate::util::{CustomError, Helper, ParseIndexVector, RemoveCard, ToJson};
 use crate::{html, AppState};
 
 #[derive(Debug, Deserialize)]
@@ -129,6 +129,61 @@ async fn move_(state: Data<AppState>, web::Form(form): web::Form<MoveCard>) -> A
     Ok(html::make_board(board))
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct DeleteCard {
+    card_id: i64,
+}
+
+#[delete("")]
+async fn delete(state: Data<AppState>, web::Form(form): web::Form<DeleteCard>) -> AwResult<Markup> {
+    let DeleteCard { card_id } = form;
+
+    #[derive(Debug)]
+    struct Query {
+        id: i64,
+        cards_order: String,
+    }
+
+    let query: Option<Query> = sqlx::query_as!(
+        Query,
+        "SELECT id, cards_order FROM lists WHERE id IN (SELECT list_id FROM cards WHERE id = ?);",
+        form.card_id,
+    )
+    .fetch_optional(&state.db)
+    .await
+    .ensure_query_success()?;
+
+    let Some(query) = query else {
+        return Err(CustomError::InsufficientItemsReturned(format!(
+            "Could not find list associated with {}",
+            card_id
+        ))
+        .into());
+    };
+
+    let cards_order = query
+        .cards_order
+        .parse_index_vector()?
+        .remove_card(card_id)?
+        .to_json();
+
+    sqlx::query!(
+        "BEGIN TRANSACTION;
+        UPDATE lists SET cards_order = ? WHERE id = ?;
+        DELETE FROM cards WHERE id = ?;
+        COMMIT;",
+        cards_order,
+        query.id,
+        card_id,
+    )
+    .execute(&state.db)
+    .await
+    .ensure_query_success()?;
+
+    Ok(html::make_board(board_data(state).await?.1))
+}
+
 pub fn service() -> actix_web::Scope {
-    web::scope("/card").service(move_)
+    web::scope("/card").service(move_).service(delete)
 }
