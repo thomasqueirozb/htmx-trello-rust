@@ -1,10 +1,11 @@
+mod board;
 mod db;
 mod html;
 mod models;
 mod util;
 
-use crate::db::{QueryId, QueryIds};
-use crate::util::{CustomError, Helper, InIndexVector, ParseIndexVector};
+use crate::board::board_data;
+use crate::util::{CustomError, Helper, ParseIndexVector};
 
 use actix_files::Files;
 use actix_web::middleware::Logger;
@@ -12,8 +13,7 @@ use actix_web::web::{self, Data};
 use actix_web::{get, post, App, HttpServer, Result as AwResult};
 use maud::Markup;
 use serde::Deserialize;
-use sqlx::{QueryBuilder, SqlitePool};
-use std::collections::HashMap;
+use sqlx::SqlitePool;
 use std::io;
 
 const DB_URL: &str = "sqlite://sqlite.db";
@@ -22,51 +22,9 @@ struct AppState {
     db: SqlitePool,
 }
 
-async fn board(state: Data<AppState>) -> AwResult<(String, Vec<models::List>)> {
-    let board = models::BoardData::query_id(1, &state.db).await?;
-    let lists = models::ListData::query_ids(&board.lists_order, &state.db).await?;
-
-    let cards: Vec<db::Card> = QueryBuilder::new("SELECT * FROM cards WHERE list_id")
-        .in_index_vector(&board.lists_order)
-        .build_query_as::<db::Card>()
-        .fetch_all(&state.db)
-        .await
-        .ensure_data_type()?;
-
-    let mut lists: HashMap<i64, models::ListData> =
-        lists.into_iter().map(|list| (list.id, list)).collect();
-
-    for card in cards {
-        let list_id = &card.list_id;
-        if let Some(list) = lists.get_mut(list_id) {
-            list.cards.push(card);
-        } else {
-            println!("Couldn't find {list_id}");
-        }
-    }
-
-    let ordered_lists = board
-        .lists_order
-        .into_iter()
-        .map(|idx| lists.remove(&idx).unwrap())
-        .map(|mut list| {
-            list.cards = list
-                .cards_order
-                .iter()
-                .filter_map(|&idx| list.cards.iter().find(|&card| card.id == idx))
-                .cloned()
-                .collect();
-            list
-        })
-        .map(models::List::from)
-        .collect();
-
-    Ok((board.title, ordered_lists))
-}
-
 #[get("/")]
 async fn index(state: Data<AppState>) -> AwResult<Markup> {
-    let board = board(state).await?;
+    let board = board_data(state).await?;
     Ok(html::base(board.0, board.1))
 }
 
@@ -190,7 +148,7 @@ async fn move_card(
         .ensure_query_success()?;
     }
 
-    let board = board(state).await?.1;
+    let board = board_data(state).await?.1;
 
     Ok(html::make_board(board))
 }
