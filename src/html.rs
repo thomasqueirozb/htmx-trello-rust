@@ -19,7 +19,8 @@ on drop or dragend remove .no-pointer-events from <.list>*/>
     // remove .no-pointer-events from .no-pointer-events
 "
         {
-            (card.title)
+            span { (card.title) }
+            button.remove { "X" }
         }
     }
 }
