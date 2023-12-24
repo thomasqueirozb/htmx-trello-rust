@@ -50,9 +50,11 @@ async fn move_(state: Data<AppState>, web::Form(form): web::Form<MoveCard>) -> A
     }
     let actual_position = |new_position: i64, len: usize| -> usize {
         if new_position < 0 {
+            // Not found, insert at the end
             len
         } else {
-            new_position as usize
+            // Don't insert after len
+            (new_position as usize).min(len)
         }
     };
 
