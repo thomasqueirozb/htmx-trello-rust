@@ -7,6 +7,7 @@ use crate::db::{QueryId, QueryIds};
 use crate::util::{CustomError, Helper, InIndexVector, ParseIndexVector};
 
 use actix_files::Files;
+use actix_web::middleware::Logger;
 use actix_web::web::{self, Data};
 use actix_web::{get, post, App, HttpServer, Result as AwResult};
 use maud::Markup;
@@ -197,10 +198,12 @@ async fn move_card(
 #[actix_web::main]
 async fn main() -> io::Result<()> {
     let db = db::init(DB_URL).await.unwrap();
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(AppState { db: db.clone() }))
+            .wrap(Logger::default())
             .service(index)
             .service(move_card)
             .service(Files::new("/static", "static").show_files_listing())
