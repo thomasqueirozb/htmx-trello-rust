@@ -14,7 +14,10 @@ pub fn edit_card(card: db::Card) -> Markup {
             hx-include="this"
         {
             input type="hidden" name="card-id" value=(card.id) {}
-            input name="title" autofocus value=(card.title) {}
+            textarea name="title" autofocus
+                hx-put=(format!("/card/edit/{card_id}"))
+                hx-target=(format!("#{id}"))
+                hx-trigger="keydown[keyCode==13&&!shiftKey]" { (card.title) }
 
             div.center-two {
                 button hx-get=(format!("/card/{card_id}")) hx-target=(format!("#{id}")) { "❌" }
