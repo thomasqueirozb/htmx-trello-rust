@@ -52,6 +52,19 @@ impl QueryIds for models::ListData {
     }
 }
 
+#[async_trait]
+impl QueryId for models::ListData {
+    async fn query_id(id: i64, db: &DBPool) -> AwResult<Self> {
+        Ok(
+            sqlx::query_as!(db::List, "SELECT * FROM lists WHERE id = ?", id)
+                .fetch_one(db)
+                .await
+                .ensure_data_type()?
+                .into(),
+        )
+    }
+}
+
 #[derive(Serialize, FromRow, Debug, Clone)]
 pub struct Card {
     pub id: i64,

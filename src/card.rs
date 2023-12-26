@@ -6,7 +6,7 @@ use serde::Deserialize;
 use crate::board::board_data;
 use crate::db::QueryId;
 use crate::util::{CustomError, Helper, ParseIndexVector, RemoveCard, ToJson};
-use crate::{db, html, AppState};
+use crate::{db, html, models, AppState};
 
 #[get("/{id}")]
 async fn get(state: Data<AppState>, path: web::Path<i64>) -> AwResult<Markup> {
@@ -214,11 +214,56 @@ async fn delete(state: Data<AppState>, web::Form(form): web::Form<DeleteCard>) -
     Ok(html::make_board(board_data(state).await?.1))
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct NewCard {
+    list_id: i64,
+    title: String,
+}
+
+#[post("")]
+async fn post_new(state: Data<AppState>, web::Form(form): web::Form<NewCard>) -> AwResult<Markup> {
+    let NewCard { list_id, title } = form;
+
+    sqlx::query!(
+        "BEGIN TRANSACTION;
+        INSERT INTO cards (list_id, title) VALUES (?, ?);
+        UPDATE lists
+            SET cards_order = json_insert(cards_order, '$[#]', last_insert_rowid())
+            WHERE id = ?;
+        COMMIT;",
+        list_id,
+        title,
+        list_id,
+    )
+    .execute(&state.db)
+    .await
+    .ensure_query_success()?;
+
+    let mut list = models::ListData::query_id(list_id, &state.db).await?;
+
+    let cards: Vec<db::Card> =
+        sqlx::query_as!(db::Card, "SELECT * FROM cards WHERE list_id = ?", list_id)
+            .fetch_all(&state.db)
+            .await
+            .ensure_data_type()?;
+
+    list.cards = list
+        .cards_order
+        .iter()
+        .filter_map(|&idx| cards.iter().find(|&card| card.id == idx))
+        .cloned()
+        .collect();
+
+    Ok(html::make_list(list.into()))
+}
+
 pub fn service() -> actix_web::Scope {
     web::scope("/card")
         .service(move_)
         .service(delete)
         .service(get)
+        .service(post_new)
         .service(edit_get)
         .service(edit_put)
 }

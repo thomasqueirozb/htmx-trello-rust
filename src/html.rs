@@ -55,10 +55,10 @@ on drop or dragend remove .no-pointer-events from <.list>*/>
     }
 }
 
-/// A basic list with dynamic `list_title` and a list of cards.
 pub fn make_list(list: List) -> Markup {
+    let id = list.id();
     html! {
-        ul.list id=(list.id()) _="
+        ul.list id=(id) _="
 on dragover or dragenter halt the event
     remove .hovered from .list then add .hovered to me
 on dragleave if event.target is me and event.fromElement.parentElement is not me
@@ -85,6 +85,16 @@ on drop remove .hovered from me
             h2 class="list-title" { (list.title) }
             @for card in list.cards {
                 (make_card(card))
+            }
+            button.new-card _=(format!("on click toggle .hidden on .new-card in #{id}")) { "＋ New card" }
+            form.hidden.new-card {
+                input type="hidden" name="list-id" value=(list.id) {}
+                textarea name="title" placeholder="Title" {}
+
+                div.center-two {
+                    button _=(format!("on click toggle .hidden on .new-card in #{id}")) { "❌" }
+                    button hx-post="/card" hx-target=(format!("#{id}")) { "✅️" }
+                }
             }
         }
     }
