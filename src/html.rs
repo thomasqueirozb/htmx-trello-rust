@@ -20,7 +20,7 @@ on drop or dragend remove .no-pointer-events from <.list>*/>
     // remove .no-pointer-events from .no-pointer-events
 "
         {
-            input type="hidden" name="card-id" value=(card.id)
+            input type="hidden" name="card-id" value=(card.id) {}
 
             span { (card.title) }
             button.remove hx-delete="/card" hx-target="#board" hx-swap="outerHTML" { "X" }
