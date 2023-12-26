@@ -3,11 +3,32 @@ use crate::models::List;
 
 use maud::{html, Markup, DOCTYPE};
 
+pub fn edit_card(card: db::Card) -> Markup {
+    let card_id = card.id;
+    let id = format!("card-{card_id}");
+
+    html! {
+        li.card.edit
+            draggable="false"
+            id=(id)
+            hx-include="this"
+        {
+            input type="hidden" name="card-id" value=(card.id) {}
+            input name="title" autofocus value=(card.title) {}
+
+            div.center-two {
+                button hx-get=(format!("/card/{card_id}")) hx-target=(format!("#{id}")) hx-swap="outerHTML" { "❌" }
+                button hx-put=(format!("/card/edit/{card_id}")) hx-target=(format!("#{id}")) hx-swap="outerHTML" { "✅️" }
+            }
+        }
+    }
+}
+
 pub fn make_card(card: db::Card) -> Markup {
     let id = format!("card-{}", card.id);
 
     html! {
-        li.card
+        li.card.regular
             draggable="true"
             id=(id)
             hx-include="this"
@@ -23,7 +44,10 @@ on drop or dragend remove .no-pointer-events from <.list>*/>
             input type="hidden" name="card-id" value=(card.id) {}
 
             span { (card.title) }
-            button.remove hx-delete="/card" hx-target="#board" hx-swap="outerHTML" { "X" }
+            div {
+                button hx-get=(format!("/card/edit/{}", card.id)) hx-target=(format!("#{id}")) hx-swap="outerHTML" { "🖊️" }
+                button.remove hx-delete="/card" hx-target="#board" hx-swap="outerHTML" { "❌" }
+            }
         }
     }
 }

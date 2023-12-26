@@ -1,11 +1,46 @@
 use actix_web::web::{self, Data};
-use actix_web::{delete, post, Result as AwResult};
+use actix_web::{delete, get, post, put, Result as AwResult};
 use maud::Markup;
 use serde::Deserialize;
 
 use crate::board::board_data;
+use crate::db::QueryId;
 use crate::util::{CustomError, Helper, ParseIndexVector, RemoveCard, ToJson};
-use crate::{html, AppState};
+use crate::{db, html, AppState};
+
+#[get("/{id}")]
+async fn get(state: Data<AppState>, path: web::Path<i64>) -> AwResult<Markup> {
+    let id = path.into_inner();
+    let card = db::Card::query_id(id, &state.db).await?;
+    Ok(html::make_card(card))
+}
+
+#[get("/edit/{id}")]
+async fn edit_get(state: Data<AppState>, path: web::Path<i64>) -> AwResult<Markup> {
+    let id = path.into_inner();
+    let card = db::Card::query_id(id, &state.db).await?;
+    Ok(html::edit_card(card))
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct EditCard {
+    card_id: i64,
+    title: String,
+}
+
+#[put("/edit/{id}")]
+async fn edit_put(state: Data<AppState>, web::Form(form): web::Form<EditCard>) -> AwResult<Markup> {
+    let EditCard { card_id, title } = form;
+
+    sqlx::query!("UPDATE cards SET title = ? WHERE id = ?", title, card_id)
+        .execute(&state.db)
+        .await
+        .ensure_query_success()?;
+
+    let card = db::Card::query_id(card_id, &state.db).await?;
+    Ok(html::make_card(card))
+}
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -179,5 +214,10 @@ async fn delete(state: Data<AppState>, web::Form(form): web::Form<DeleteCard>) -
 }
 
 pub fn service() -> actix_web::Scope {
-    web::scope("/card").service(move_).service(delete)
+    web::scope("/card")
+        .service(move_)
+        .service(delete)
+        .service(get)
+        .service(edit_get)
+        .service(edit_put)
 }
