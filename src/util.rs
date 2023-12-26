@@ -14,8 +14,8 @@ pub enum CustomError {
     InsufficientItemsReturned(String),
     #[display(fmt = "Card with id {} not found inside index vector", _0)]
     CardNotFound(i64),
-    #[display(fmt = "Custom error: {}", _0)]
-    Other(String),
+    // #[display(fmt = "Custom error: {}", _0)]
+    // Other(String),
 }
 
 impl ResponseError for CustomError {
@@ -76,7 +76,7 @@ pub trait RemoveCard {
 impl RemoveCard for Vec<i64> {
     fn remove_card(mut self, card_id: i64) -> Result<Vec<i64>, CustomError> {
         let Some(position) = self.iter().position(|&id| id == card_id) else {
-            return Err(CustomError::CardNotFound(card_id).into());
+            return Err(CustomError::CardNotFound(card_id));
         };
         self.remove(position);
 

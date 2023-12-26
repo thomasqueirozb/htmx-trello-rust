@@ -66,8 +66,7 @@ impl QueryId for Card {
             sqlx::query_as!(db::Card, "SELECT * FROM cards where id = ?", id)
                 .fetch_one(db)
                 .await
-                .ensure_data_type()?
-                .into(),
+                .ensure_data_type()?,
         )
     }
 }
