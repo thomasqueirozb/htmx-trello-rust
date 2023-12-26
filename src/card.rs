@@ -32,6 +32,7 @@ struct EditCard {
 #[put("/edit/{id}")]
 async fn edit_put(state: Data<AppState>, web::Form(form): web::Form<EditCard>) -> AwResult<Markup> {
     let EditCard { card_id, title } = form;
+    let title = title.trim();
 
     sqlx::query!("UPDATE cards SET title = ? WHERE id = ?", title, card_id)
         .execute(&state.db)
