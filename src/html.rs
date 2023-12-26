@@ -69,11 +69,11 @@ pub fn make_board(lists: Vec<List>) -> Markup {
             @for list in lists {
                 (make_list(list))
             }
-        }
-        form.hidden id="move-card" hx-post="/card/move" hx-target="#board" hx-trigger="cardmoved" hx-swap="outerHTML" {
-            input type="text" id="moved-card-id" name="card-id" value="" {}
-            input type="text" id="moved-to-list-id" name="to-list-id" value="" {}
-            input type="text" id="moved-new-position" name="new-position" value="" {}
+            form.hidden id="move-card" hx-post="/card/move" hx-target="#board" hx-trigger="cardmoved" hx-swap="outerHTML" {
+                input type="text" id="moved-card-id" name="card-id" value="" {}
+                input type="text" id="moved-to-list-id" name="to-list-id" value="" {}
+                input type="text" id="moved-new-position" name="new-position" value="" {}
+            }
         }
     }
 }
