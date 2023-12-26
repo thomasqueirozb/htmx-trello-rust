@@ -17,8 +17,8 @@ pub fn edit_card(card: db::Card) -> Markup {
             input name="title" autofocus value=(card.title) {}
 
             div.center-two {
-                button hx-get=(format!("/card/{card_id}")) hx-target=(format!("#{id}")) hx-swap="outerHTML" { "❌" }
-                button hx-put=(format!("/card/edit/{card_id}")) hx-target=(format!("#{id}")) hx-swap="outerHTML" { "✅️" }
+                button hx-get=(format!("/card/{card_id}")) hx-target=(format!("#{id}")) { "❌" }
+                button hx-put=(format!("/card/edit/{card_id}")) hx-target=(format!("#{id}")) { "✅️" }
             }
         }
     }
@@ -45,8 +45,8 @@ on drop or dragend remove .no-pointer-events from <.list>*/>
 
             span { (card.title) }
             div {
-                button hx-get=(format!("/card/edit/{}", card.id)) hx-target=(format!("#{id}")) hx-swap="outerHTML" { "🖊️" }
-                button.remove hx-delete="/card" hx-target="#board" hx-swap="outerHTML" { "❌" }
+                button hx-get=(format!("/card/edit/{}", card.id)) hx-target=(format!("#{id}")) { "🖊️" }
+                button.remove hx-delete="/card" hx-target="#board" { "❌" }
             }
         }
     }
@@ -93,7 +93,7 @@ pub fn make_board(lists: Vec<List>) -> Markup {
             @for list in lists {
                 (make_list(list))
             }
-            form.hidden id="move-card" hx-post="/card/move" hx-target="#board" hx-trigger="cardmoved" hx-swap="outerHTML" {
+            form.hidden id="move-card" hx-post="/card/move" hx-target="#board" hx-trigger="cardmoved" {
                 input type="text" id="moved-card-id" name="card-id" value="" {}
                 input type="text" id="moved-to-list-id" name="to-list-id" value="" {}
                 input type="text" id="moved-new-position" name="new-position" value="" {}
@@ -109,6 +109,7 @@ pub fn base(board_title: String, lists: Vec<List>) -> Markup {
             head {
                 meta charset="utf-8";
                 meta name="viewport" content="width=device-width,initial-scale=1.0";
+                meta name="htmx-config" content=r#"{"defaultSwapStyle":"outerHTML"}"#r;
                 title { (format!("Board - {board_title}")) }
                 link rel="stylesheet" type="text/css" href="/static/index.css";
                 script src="/static/placement.js" {};
