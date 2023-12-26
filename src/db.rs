@@ -59,6 +59,19 @@ pub struct Card {
     pub list_id: i64,
 }
 
+#[async_trait]
+impl QueryId for Card {
+    async fn query_id(id: i64, db: &DBPool) -> AwResult<Self> {
+        Ok(
+            sqlx::query_as!(db::Card, "SELECT * FROM cards where id = ?", id)
+                .fetch_one(db)
+                .await
+                .ensure_data_type()?
+                .into(),
+        )
+    }
+}
+
 #[derive(Serialize, FromRow, Debug, Clone)]
 pub struct List {
     pub id: i64,
