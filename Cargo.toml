@@ -1,5 +1,5 @@
 [package]
-name = "htmx-actix-todo"
+name = "htmx-trello-rust"
 version = "0.1.0"
 edition = "2021"
 
