@@ -875,6 +875,7 @@ dependencies = [
  "actix-web",
  "async-trait",
  "derive_more",
+ "dotenvy",
  "env_logger",
  "maud",
  "serde",

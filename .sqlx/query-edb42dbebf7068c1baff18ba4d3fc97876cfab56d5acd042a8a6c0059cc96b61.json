@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "BEGIN TRANSACTION;\n        UPDATE lists SET cards_order = ? WHERE id = ?;\n        DELETE FROM cards WHERE id = ?;\n        COMMIT;",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "edb42dbebf7068c1baff18ba4d3fc97876cfab56d5acd042a8a6c0059cc96b61"
+}

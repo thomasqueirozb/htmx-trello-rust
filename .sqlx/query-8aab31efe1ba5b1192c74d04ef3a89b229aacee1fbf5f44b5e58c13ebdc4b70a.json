@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "BEGIN TRANSACTION;\n        INSERT INTO cards (list_id, title) VALUES (?, ?);\n        UPDATE lists\n            SET cards_order = json_insert(cards_order, '$[#]', last_insert_rowid())\n            WHERE id = ?;\n        COMMIT;",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "8aab31efe1ba5b1192c74d04ef3a89b229aacee1fbf5f44b5e58c13ebdc4b70a"
+}

@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id, cards_order FROM lists WHERE id IN\n        (?, (SELECT list_id FROM cards WHERE id = ?));",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Int64"
+      },
+      {
+        "name": "cards_order",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "cb30480c819ec3834623fd43d491795f5075acd634101f20cc3a20c124ae909e"
+}

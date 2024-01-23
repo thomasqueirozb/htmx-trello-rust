@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT * FROM boards where id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Int64"
+      },
+      {
+        "name": "title",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "lists_order",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "122156d61de50f1551e63a416464fa438a847f277166889c53d4467ca5f6b5d0"
+}

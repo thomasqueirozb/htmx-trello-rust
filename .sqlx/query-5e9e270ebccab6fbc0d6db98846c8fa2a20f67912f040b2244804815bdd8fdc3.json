@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT * FROM lists WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Int64"
+      },
+      {
+        "name": "title",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "cards_order",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "5e9e270ebccab6fbc0d6db98846c8fa2a20f67912f040b2244804815bdd8fdc3"
+}
